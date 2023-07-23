@@ -1,0 +1,120 @@
+gcloud compute ssh hadoop-cluster-m ^
+  --project=studied-theater-392515 ^
+  --zone=us-east1-d -- -D 1080 -N
+
+
+
+
+"C:\Program Files\Google\Chrome\Application\chrome.exe" ^
+  --proxy-server="socks5://localhost:1080" ^
+  --user-data-dir="%Temp%\hadoop-cluster-m" http://hadoop-cluster-m:8088
+
+
+
+
+# loading from hdfs
+
+hive> create table department_data
+    > (
+    > dept_id int,
+    > dept_name string,
+    > manager_id int,
+    > salary int
+    > )
+    > row format delimited
+    > fields terminated by ',';
+
+load data inpath '/tmp/inputdata/depart_data.csv' into table department_data;
+ --{in this case, data is moved from here into the warehouse folder of the hive warehouse in hdfs}
+
+# loading from vm local
+
+load data local inpath 'file:///home/s01312283999/depart_data.csv' into table department_data;
+
+# loading by creating an external table
+
+hive> create external table department_data_external
+    > (
+    > dept_id int,
+    > dept_name string,
+    > manager_id int,
+    > salary int
+    > )
+    > row format delimited
+    > fields terminated by ','
+    > location '/tmp/inputdata/'; -- just give location, dont give the actual file
+
+# working with datasets having array type
+
+-- Sihan, 28, Hadoop:aws:hive
+
+hive> create table employee
+    > (
+    > id int,
+    > name string,
+    > skills array<string>
+    > )
+    > row format delimited
+    > fields terminated by ','
+    > collection items terminated by ':' ;
+
+you have to mention the type of data array holds.
+
+load data local inpath 'file:///home/s01312283999/array_data.csv' into table employee;
+
+collection means array's collection. stuffs put in array.
+
+Results be like: 
+ 
+101     Amit    ["HADOOP","HIVE","SPARK","BIG-DATA"]
+102     Sumit   ["HIVE","OZZIE","HADOOP","SPARK","STORM"]
+103     Rohit   ["KAFKA","CASSANDRA","HBASE"]
+
+Important Querries: 
+
+select id, name, skills[0] as primary_skills from employee;
+
+hive> select
+    > id, name, size(skills) as size_of_array,
+    > array_contains(skills, "HADOOP") as knows_array,
+    > sort_array(skills) as sorted_array
+    > from employee;
+Results:
+101     Amit    4       true    ["BIG-DATA","HADOOP","HIVE","SPARK"]
+102     Sumit   5       true    ["HADOOP","HIVE","OZZIE","SPARK","STORM"]
+103     Rohit   3       false   ["CASSANDRA","HBASE","KAFKA"]
+
+
+# working with map data. 
+Before hive
+101,Amit,age:21|gender:M
+
+
+After hive
+hive> create table employee_map_data
+    > (
+    > id int,
+    > name string,
+    > details map<string, string>
+    > )
+    > row format delimited
+    > fields terminated by ','
+    > collection items terminated by '|'
+    > map keys terminated by ':';
+
+load data local inpath 'file:///home/s01312283999/map_data.csv' into table employee_map_data;
+
+Result
+101     Amit    {"age":"21","gender":"M"}
+102     Sumit   {"age":"24","gender":"M"}
+103     Mansi   {"age":"23","gender":"F"}
+select name, details["age"] as age from employee_map_data;
+select * from employee_map_data where details["age"] = "21";
+select * from employee_map_data where details["age"]="21" and details["gender"]="M";
+
+
+
+
+
+
+
