@@ -113,6 +113,30 @@ select * from employee_map_data where details["age"] = "21";
 select * from employee_map_data where details["age"]="21" and details["gender"]="M";
 
 
+# github classik tockenso
+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
+
+## taking a back up of a table
+
+# start with creating a table
+
+hive> create table sales_data_v2
+    > (
+    > p_type string,
+    > total_sales int
+    > )
+    > row format delimited
+    > fields terminated by ',';
+load data local inpath 'file:///home/s01312283999/sales_data_raw.csv' into table sales_data_v2;
+
+# then back up table
+create table sales_data_v2_bkup as select * from sales
+_data_v2;
+
+
+
+
+
 
 
 
