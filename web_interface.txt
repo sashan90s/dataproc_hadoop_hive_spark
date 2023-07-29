@@ -133,11 +133,36 @@ load data local inpath 'file:///home/s01312283999/sales_data_raw.csv' into table
 create table sales_data_v2_bkup as select * from sales
 _data_v2;
 
+## using CSV SERDE library
 
+CREATE TABLE csv_table
+(
+name string,
+location string
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES (
+   "separatorChar" = ",",
+   "quoteChar"     = "\"",
+   "escapeChar"    = "\\"
+)  
+STORED AS TEXTFILE
+tblproperties ("skip.header.line.count" = "1");
 
+-- this one worked
 
+## wroking with Json files
 
+CREATE TABLE json_table
+(
+name string,
+id int,
+skills array<string>
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'
+STORED AS TEXTFILE; 
 
+load data local inpath 'file:///home/s01312283999/json_file.json' into table json_table;
 
 
 
