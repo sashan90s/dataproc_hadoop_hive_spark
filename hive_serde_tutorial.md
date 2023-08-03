@@ -204,7 +204,7 @@ create table sales_data_v2_bkup as select * from sales
 _data_v2;
 
 ## using CSV SERDE library
-
+```
 CREATE TABLE csv_table
 (
 name string,
@@ -217,10 +217,10 @@ WITH SERDEPROPERTIES (
    "escapeChar"    = "\\"
 )  
 STORED AS TEXTFILE
-tblproperties ("skip.header.line.count" = "1");
+tblproperties ("skip.header.line.count" = "1"); ```
 
 -- this one worked
-```
+
 ## wroking with Json files
 ```
 CREATE TABLE json_table
@@ -233,8 +233,8 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'
 STORED AS TEXTFILE; 
 
 load data local inpath 'file:///home/s01312283999/json_file.json' into table json_table;
-```
 
+```
 ## changing file editing permissions in hadoop
 ```hadoop fs -chmod -R 777 /tmp/locaiton_data/*```
 
