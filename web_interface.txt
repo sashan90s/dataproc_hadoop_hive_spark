@@ -9,6 +9,21 @@ gcloud compute ssh hadoop-cluster-m ^
   --proxy-server="socks5://localhost:1080" ^
   --user-data-dir="%Temp%\hadoop-cluster-m" http://hadoop-cluster-m:8088
 
+## gloud related:
+
+gcloud auth login
+
+gcloud config set project <project_id>
+gcloud projects list
+gcloud config set dataproc/region <value>
+gcloud dataproc clusters
+describe <cluster_name>
+
+
+## how to copy from local to gcloud
+
+gcloud compute scp path/to/local/file instance_name:path/inside/the/instanace
+
 
 
 
@@ -113,8 +128,8 @@ select * from employee_map_data where details["age"] = "21";
 select * from employee_map_data where details["age"]="21" and details["gender"]="M";
 
 
-# github classik tockenso
-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
+# bgbibtbhbubbb cblbabsbsbibkb tbobcbkbebnbsbob :buhtig
+blabla: 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
 
 ## taking a back up of a table
 
@@ -163,6 +178,10 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'
 STORED AS TEXTFILE; 
 
 load data local inpath 'file:///home/s01312283999/json_file.json' into table json_table;
+
+
+
+
 
 
 

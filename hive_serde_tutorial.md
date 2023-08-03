@@ -1,4 +1,6 @@
-## connecting to gloud
+# rm 8088
+# namenode 9870
+```
 gcloud compute ssh hadoop-cluster-m ^
   --project=studied-theater-392515 ^
   --zone=us-east1-d -- -D 1080 -N
@@ -10,9 +12,21 @@ gcloud compute ssh hadoop-cluster-m ^
   --proxy-server="socks5://localhost:1080" ^
   --user-data-dir="%Temp%\hadoop-cluster-m" http://hadoop-cluster-m:8088
 
+```
+## gloud related:
+```
+gcloud auth login
 
-# rm 8088
-# namenode 9870
+gcloud config set project <project_id>
+gcloud projects list
+gcloud config set dataproc/region <value>
+gcloud dataproc clusters
+describe <cluster_name>
+```
+
+## how to copy from local to gcloud
+```
+gcloud compute scp path/to/local/file instance_name:path/inside/the/instanace
 
 
 Name,Age,Address
@@ -33,7 +47,7 @@ WITH SERDEPROPERTIES (
   "escapeChar" = "\\"
 )
 STORED AS TEXTFILE;
-
+```
 ## Load data from the CSV file into the Hive table
 LOAD DATA LOCAL INPATH 'data.csv' INTO TABLE my_csv_table;
 
@@ -68,7 +82,7 @@ WITH SERDEPROPERTIES ("field.delim"="[,]","collection.delim"=":","mapkey.delim"=
 
 
 # loading from hdfs
-
+```
 hive> create table department_data
     > (
     > dept_id int,
@@ -85,9 +99,9 @@ load data inpath '/tmp/inputdata/depart_data.csv' into table department_data;
 # loading from vm local
 
 load data local inpath 'file:///home/s01312283999/depart_data.csv' into table department_data;
-
+```
 # loading by creating an external table
-
+```
 hive> create external table department_data_external
     > (
     > dept_id int,
@@ -97,10 +111,10 @@ hive> create external table department_data_external
     > )
     > row format delimited
     > fields terminated by ','
-    > location '/tmp/inputdata/'; -- just give location, dont give the actual file
+    > location '/tmp/inputdata/'; -- just give location, dont give the actual file ```
 
 # working with datasets having array type
-
+```
 -- Sihan, 28, Hadoop:aws:hive
 
 hive> create table employee
@@ -138,8 +152,8 @@ Results:
 101     Amit    4       true    ["BIG-DATA","HADOOP","HIVE","SPARK"]
 102     Sumit   5       true    ["HADOOP","HIVE","OZZIE","SPARK","STORM"]
 103     Rohit   3       false   ["CASSANDRA","HBASE","KAFKA"]
-
-
+```
+```
 # working with map data. 
 Before hive
 101,Amit,age:21|gender:M
@@ -166,7 +180,7 @@ Result
 select name, details["age"] as age from employee_map_data;
 select * from employee_map_data where details["age"] = "21";
 select * from employee_map_data where details["age"]="21" and details["gender"]="M";
-
+```
 
 # github classik tockenso
 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
@@ -185,6 +199,7 @@ hive> create table sales_data_v2
 load data local inpath 'file:///home/s01312283999/sales_data_raw.csv' into table sales_data_v2;
 
 # then back up table
+```
 create table sales_data_v2_bkup as select * from sales
 _data_v2;
 
@@ -205,9 +220,9 @@ STORED AS TEXTFILE
 tblproperties ("skip.header.line.count" = "1");
 
 -- this one worked
-
+```
 ## wroking with Json files
-
+```
 CREATE TABLE json_table
 (
 name string,
@@ -218,3 +233,13 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'
 STORED AS TEXTFILE; 
 
 load data local inpath 'file:///home/s01312283999/json_file.json' into table json_table;
+```
+
+## changing file editing permissions in hadoop
+```hadoop fs -chmod -R 777 /tmp/locaiton_data/*```
+
+## how to create a directory in hadoop
+```
+hadoop fs -mkdir -p /tmp/location_data
+hadoop fs -copyFromLocal file:///home/s01312283999/locations.csv /tmp/location_data
+```
