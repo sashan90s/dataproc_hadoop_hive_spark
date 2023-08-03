@@ -220,6 +220,7 @@ STORED AS TEXTFILE
 tblproperties ("skip.header.line.count" = "1"); ```
 
 -- this one worked
+```
 
 ## wroking with Json files
 ```
@@ -235,6 +236,8 @@ STORED AS TEXTFILE;
 load data local inpath 'file:///home/s01312283999/json_file.json' into table json_table;
 
 ```
+
+
 ## changing file editing permissions in hadoop
 ```hadoop fs -chmod -R 777 /tmp/locaiton_data/*```
 
