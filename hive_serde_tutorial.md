@@ -246,3 +246,47 @@ load data local inpath 'file:///home/s01312283999/json_file.json' into table jso
 hadoop fs -mkdir -p /tmp/location_data
 hadoop fs -copyFromLocal file:///home/s01312283999/locations.csv /tmp/location_data
 ```
+
+# Steps in managed parquet tables
+
+## creating an external table
+```
+hadoop fs -mkdir -p /tmp/location_data
+hadoop fs -copyFromLocal file:///home/s01312283999/locations.csv /tmp/location_data
+hadoop fs -chmod -R 777 /path/to/hdfs_directory/*
+```
+### step 1:
+```
+CREATE EXTERNAL TABLE test_drive_1
+(
+id int,
+location string
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES (
+  "separatorChar" = ",",
+  "escapeChar"    = "\\"
+)  
+STORED AS TEXTFILE
+LOCATION 'file:///tmp/location_data;
+```
+### step 2:
+
+```
+CREATE TABLE managed_parquet_table (
+    id int,
+    location string
+)
+STORED AS PARQUET;
+
+```
+
+### step 3:
+
+```
+INSERT INTO TABLE managed_parquet_table
+SELECT * FROM test_drive_1;
+```
+Keep in mind that the managed Parquet table will store its data within the Hive warehouse, while the external table's data remains in its original location (HDFS directory in this case). If you no longer need the external table, you can drop it using the DROP TABLE command:
+
+DROP TABLE test_drive_1;
