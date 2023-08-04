@@ -69,10 +69,12 @@ For example, a CSV value like "123 Main St, Apt 4" is enclosed within double quo
 In summary, the backslash (\) in quoteChar = "\"" is used as an escape character to ensure that the double quote (") is treated as a literal character for quoting values in the CSV data. It allows us to specify the double quote as part of the quoteChar property without any ambiguity.
 
 ## multidelimited SERDE
-```CREATE TABLE test (
- id string,
- hivearray array<binary>,
- hivemap map<string,int>) 
+
+```
+CREATE TABLE test (
+id string,
+hivearray array<binary>,
+hivemap map<string,int>) 
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'                  
 WITH SERDEPROPERTIES ("field.delim"="[,]","collection.delim"=":","mapkey.delim"="@");
 ```
