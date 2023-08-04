@@ -186,3 +186,5 @@ load data local inpath 'file:///home/s01312283999/json_file.json' into table jso
 
 
 
+
+

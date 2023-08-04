@@ -292,4 +292,13 @@ SELECT * FROM test_drive_1;
 ```
 Keep in mind that the managed Parquet table will store its data within the Hive warehouse, while the external table's data remains in its original location (HDFS directory in this case). If you no longer need the external table, you can drop it using the DROP TABLE command:
 
+```
 DROP TABLE test_drive_1;
+```
+
+### reading the data from inside the warehouse
+you cannot really read this data, only serde libraries can help read it properly. 
+```
+hadoop fs -cat /user/hive/warehouse/hive_db.db/managed_parquet_table/000000_0
+
+```
