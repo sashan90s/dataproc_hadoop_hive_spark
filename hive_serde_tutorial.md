@@ -302,3 +302,103 @@ you cannot really read this data, only serde libraries can help read it properly
 hadoop fs -cat /user/hive/warehouse/hive_db.db/managed_parquet_table/000000_0
 
 ```
+
+## ORC file format and hive for analytics
+
+### creating the csv table inside the hive
+
+```
+create table automobile_sales_data 
+(
+ORDERNUMBER int, 
+QUANTITYORDERED int,
+PRICEEACH float,
+ORDERLINENUMBER int,
+SALES float,
+STATUS string,
+QTR_ID int,
+MONTH_ID int,
+YEAR_ID int,
+PRODUCTLINE string,
+MSRP int,
+PRODUCTCODE string,
+PHONE string,
+CITY string,
+STATE string,
+POSTALCODE string,
+COUNTRY string,
+TERRITORY string,
+CONTACTLASTNAME string,
+CONTACTFIRSTNAME string,
+DEALSIZE string 
+) 
+row format delimited 
+fields terminated by ','  
+tblproperties("skip.header.line.count"="1") ;
+
+load data local inpath 'file:///home/s01312283999/sales_order_data.csv' into table automobile_sales_data;
+
+set hive.cli.print.header=true;
+
+```
+
+## now put the data into the ORC file from the csv table
+```
+create table automobile_sales_data_orc
+(
+ORDERNUMBER int, 
+QUANTITYORDERED int,
+PRICEEACH float,
+ORDERLINENUMBER int,
+SALES float,
+STATUS string,
+QTR_ID int,
+MONTH_ID int,
+YEAR_ID int,
+PRODUCTLINE string,
+MSRP int,
+PRODUCTCODE string,
+PHONE string,
+CITY string,
+STATE string,
+POSTALCODE string,
+COUNTRY string,
+TERRITORY string,
+CONTACTLASTNAME string,
+CONTACTFIRSTNAME string,
+DEALSIZE string 
+) 
+stored as orc;
+
+
+insert overwrite table automobile_sales_data_orc
+select * from automobile_sales_data;
+
+``` 
+you can now go to this and doule check in the filesystem of the hive
+
+```
+hadoop fs -ls /user/hive/warehouse/hive_db.db/automobile_sales_data_orc
+```
+
+## let's do some simple operations
+```
+select
+year_id,
+sum(sales) as total_sales
+from 
+automobile_sales_data_orc
+group by year_id;
+```
+
+let's compare the time taken
+
+```
+select
+year_id,
+sum(sales) as total_sales
+from 
+automobile_sales_data
+group by year_id;
+
+```
