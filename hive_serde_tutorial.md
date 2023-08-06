@@ -342,7 +342,7 @@ set hive.cli.print.header=true;
 
 ```
 
-## now put the data into the ORC file from the csv table
+### now put the data into the ORC file from the csv table
 ```
 create table automobile_sales_data_orc
 (
@@ -406,11 +406,30 @@ group by year_id;
 
 In paritioning the hive table, we do everything the same, but the column you want to partition by, do not include them in the main list of column creation. Leave it to use with with Partition by (column name you want to partition by)
 
-```
-
-```
 
 ### static partitioning
+
+we need to first set the property for static partitioning
+
+```
+set hive.mapred.mode=strict;
+```
+
+```
+create table automobile_sales_static_part
+(
+ORDERNUMBER int, 
+QUANTITYORDERED int,
+SALES float,
+YEAR_ID int
+)
+
+partitioned by (COUNTRY string);
+
+```
+
+
+
 we will create the paritions <i> individually, manually and we will load the data manually into those partitions </i>
 
 ```
@@ -426,4 +445,12 @@ age
 from
 emp_data
 where year = '2023';
+```
+### dynamic partitioning
+it is not a default paritioning system on hive. That is why you have to first enable it
+
+```
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
 ```
