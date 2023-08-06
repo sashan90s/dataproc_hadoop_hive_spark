@@ -412,3 +412,18 @@ In paritioning the hive table, we do everything the same, but the column you wan
 
 ### static partitioning
 we will create the paritions <i> individually, manually and we will load the data manually into those partitions </i>
+
+```
+load data inpath '/hdfs/path/to/file/' into table employees PARTITION (year='2023')
+
+or
+
+insert overwrite table employees 
+PARTITION (year = '2023')
+select 
+name,
+age
+from
+emp_data
+where year = '2023';
+```
