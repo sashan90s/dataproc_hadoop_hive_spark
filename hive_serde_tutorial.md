@@ -402,3 +402,13 @@ automobile_sales_data
 group by year_id;
 
 ```
+# partitioning of the table
+
+In paritioning the hive table, we do everything the same, but the column you want to partition by, do not include them in the main list of column creation. Leave it to use with with Partition by (column name you want to partition by)
+
+```
+
+```
+
+### static partitioning
+we will create the paritions <i> individually, manually and we will load the data manually into those partitions </i>
