@@ -592,5 +592,174 @@ drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:17 /user/hive/wareho
 
 # bucketing
 
-## how to create buckets
+## first start with creating a normal table
+```
+create table users
+(
+id int,
+name string,
+salary int,
+unit string
+)
 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES (
+   "separatorChar" = ",",
+   "quoteChar"     = "\"",
+   "escapeChar"    = "\\"
+)  
+STORED AS TEXTFILE;
+
+
+load data local inpath 'file:///home/s01312283999/users.csv' into table users; 
+```
+## create another locations table
+
+```
+create table locations
+(
+id int,
+location string
+)
+
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES (
+   "separatorChar" = ",",
+   "quoteChar"     = "\"",
+   "escapeChar"    = "\\"
+)  
+STORED AS TEXTFILE;
+
+
+load data local inpath 'file:///home/s01312283999/locations.csv' into table locations; 
+```
+
+# enabling properties for bucketing; 
+```
+set hive.enforce.bucketing=true;
+```
+
+## how to create buckets
+```
+create table buck_users
+(
+id int,
+name string,
+salary int,
+unit string
+)
+
+clustered by (id)
+into 3 buckets;
+
+insert overwrite table buck_users select * from users;
+
+ 
+```
+
+# joins
+
+## Hive join enabling- Map Side Join
+
+```
+set hive.enforce.bucketing=true;
+SET hive.auto.convert.join=true;
+SET hive.mapjoin.smalltable.filesize=50000000; -- this is optional, useful if you want to use it to limit the small table size that is sent to the datanode
+ 
+```
+lets create tables with equal number of buckets 
+
+```
+create table buck_users
+(
+id int,
+name string,
+salary int,
+unit string
+)
+
+clustered by (id)
+sorted by (id)
+into 2 buckets;
+
+insert overwrite table buck_users select * from users;
+
+create table buck_locations
+( 
+id int, 
+location string 
+) 
+clustered by (id)
+sorted by (id) 
+into 2 buckets;
+
+insert overwrite table buck_locations select * from locations; 
+```
+Even though you have mentioned sorted in here, it will not work in the current properties set up.
+Because, current properties set up is enabled for map side join. 
+
+Let's query witj a join in the map side join configuration.
+
+## map side join
+
+```
+set hive.enforce.bucketing=true;
+SET hive.auto.convert.join=true;
+
+select * from buck_users u
+INNER JOIN buck_locations l
+ON u.id = l.id;
+
+Congratulations... this is how the result will look like
+
+<b>
+--results
+u.id    u.name  u.salary        u.unit  l.id    l.location
+2       Sumit   200     DNA     2       BIHAR
+3       Yadav   300     DNA     3       MP
+6       Mahoor  200     FCS     6       GOA
+1       Amit    100     DNA     1       UP
+4       Sunil   500     FCS     4       AP
+5       Kranti  100     FCS     5       MAHARASHTRA
+Time taken: 14.49 seconds, Fetched: 6 row(s)
+hive> 
+</b>
+```
+
+
+## bucket map join
+
+For the BUCKET MAP JOIN you aint have to do anything. you create the table in the same way...
+all you have to do is set configuration for BUCKET MAP JOIN.
+
+```
+set hive.enforce.bucketing=true;
+SET hive.auto.convert.join=true;
+set hive.optimize.bucketmapjoin=true; 
+
+-- we keep the joins same
+
+select * from buck_users u
+INNER JOIN buck_locations l
+ON u.id = l.id;
+
+```
+
+## Sorted merge bucket map join
+
+```
+set hive.enforce.sortmergebucketmapjoin=false; 
+set hive.auto.convert.sortmerge.join=true; 
+set hive.optimize.bucketmapjoin = true; 
+set hive.optimize.bucketmapjoin.sortedmerge = true;
+
+select * from buck_users u
+INNER JOIN buck_locations l
+ON u.id = l.id;
+
+```
+In any of the cases, we did not see any reducer at all. But their internal optimization will have it.
+
+map side join = One data set large enough/small enough 
+Bucket map join = if you data is bucketized, not with same amount of buckets
+Sorted Merge Bucket Map Join = Equal number of buckets and data is sorted inside the buckets
