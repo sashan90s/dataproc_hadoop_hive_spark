@@ -414,7 +414,7 @@ we need to first set the property for static partitioning
 ```
 set hive.mapred.mode=strict;
 ```
-
+#### creating the table for static partitioning
 ```
 create table automobile_sales_static_part
 (
@@ -425,6 +425,11 @@ YEAR_ID int
 )
 
 partitioned by (COUNTRY string);
+
+
+-- do this and see if it was successful
+
+describe formatted automobile_sales_static_part;
 
 ```
 
@@ -446,6 +451,34 @@ from
 emp_data
 where year = '2023';
 ```
+
+
+Let's see this in action
+
+
+```
+-- we will insert data from another orc table that we previously created.
+
+
+insert overwrite table automobile_sales_static_part
+PARTITION (country = 'USA')
+select 
+ORDERNUMBER, 
+QUANTITYORDERED,
+SALES,
+YEAR_ID
+from
+automobile_sales_data_orc
+where COUNTRY = 'USA';
+```
+
+Up there, you do not need to mention country in the select statements because
+that is not how we created it. We do not want to have a country column in the first place.
+if you go to the sales_data_static_part table, you would see we did not specify any country column to have.
+
+now you can go ahead and query it
+
+
 ### dynamic partitioning
 it is not a default paritioning system on hive. That is why you have to first enable it
 
@@ -453,4 +486,64 @@ it is not a default paritioning system on hive. That is why you have to first en
 SET hive.exec.dynamic.partition=true;
 SET hive.exec.dynamic.partition.mode=nonstrict;
 
+```
+We will first create the dynamic table
+
+
+```
+create table automobile_sales_dynamic_part
+(
+ORDERNUMBER int, 
+QUANTITYORDERED int,
+SALES float,
+YEAR_ID int
+)
+
+partitioned by (COUNTRY string);
+
+
+--now lets load the data
+
+insert overwrite table automobile_sales_dynamic_part
+PARTITION (country)
+select 
+ORDERNUMBER, 
+QUANTITYORDERED,
+SALES,
+YEAR_ID,
+COUNTRY
+from
+automobile_sales_data_orc
+; 
+
+```
+
+Did you notice we have here explicitly added the partitioning column, because 
+hive would not know otherwise.
+
+Now if you do the following you will see, in the datawarehouse, it has automatically created its partitions, and in plenty.
+You did not have to do anything manually to create these paritions;
+
+```
+hadoop fs -ls /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part
+```
+
+
+Below shows all the files that has the partitions
+
+```
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Finland
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=France
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Germany
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Ireland
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Italy
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Japan
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Norway
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Philippines
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Singapore
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Spain
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Sweden
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=Switzerland
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=UK
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=USA
 ```
