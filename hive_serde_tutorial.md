@@ -407,7 +407,7 @@ group by year_id;
 In paritioning the hive table, we do everything the same, but the column you want to partition by, do not include them in the main list of column creation. Leave it to use with with Partition by (column name you want to partition by)
 
 
-### static partitioning
+## static partitioning
 
 we need to first set the property for static partitioning
 
@@ -479,7 +479,7 @@ if you go to the sales_data_static_part table, you would see we did not specify 
 now you can go ahead and query it
 
 
-### dynamic partitioning
+## dynamic partitioning
 it is not a default paritioning system on hive. That is why you have to first enable it
 
 ```
@@ -547,3 +547,50 @@ drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/wareho
 drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=UK
 drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:04 /user/hive/warehouse/hive_db.db/automobile_sales_dynamic_part/country=USA
 ```
+
+## multilevel paritioning
+
+```
+create table automobile_sales_multilevel_part
+(
+ORDERNUMBER int, 
+QUANTITYORDERED int,
+SALES float 
+)
+partitioned by (COUNTRY string, YEAR_ID int);
+```
+
+Now lets load in the data;
+
+```
+insert overwrite table automobile_sales_multilevel_part
+PARTITION (country, year_id)
+select 
+ORDERNUMBER, 
+QUANTITYORDERED,
+SALES,
+COUNTRY,
+YEAR_ID
+from
+automobile_sales_data_orc
+; 
+```
+
+Now you will see each partition has one folder with the country name first and inside that it has other folders with year name.
+
+```
+hadoop fs -ls /user/hive/warehouse/hive_db.db/automobile_sales_multilevel_part/country=USA
+```
+
+Below is the result:
+
+```
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:17 /user/hive/warehouse/hive_db.db/automobile_sales_multilevel_part/country=USA/year_id=2003
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:17 /user/hive/warehouse/hive_db.db/automobile_sales_multilevel_part/country=USA/year_id=2004
+drwxr-xr-x   - s01312283999 hadoop          0 2023-08-07 02:17 /user/hive/warehouse/hive_db.db/automobile_sales_multilevel_part/country=USA/year_id=2005
+```
+
+# bucketing
+
+## how to create buckets
+
